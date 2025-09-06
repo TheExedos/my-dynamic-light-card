@@ -42,6 +42,11 @@ class MyDynamicLightCard extends HTMLElement {
         </div>
       </ha-card>
     `;
+
+    // Click-to-toggle hinzufügen
+    this.querySelector('ha-card').addEventListener('click', () => {
+      hass.callService('light', 'toggle', { entity_id: entityId });
+    });
   }
 }
 
