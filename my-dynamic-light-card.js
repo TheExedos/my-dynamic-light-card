@@ -64,6 +64,7 @@ class MyDynamicLightCard extends HTMLElement {
         .name{
             color:${namecolor || "white"};
             font-size:${fontSize};
+            -webkit-text-stroke: 1px #222222;
         }
         .icon{
             color:${color};
