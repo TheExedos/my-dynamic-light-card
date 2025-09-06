@@ -43,11 +43,12 @@ class MyDynamicLightCard extends HTMLElement {
         const mid  = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
         const dark = `rgb(${Math.floor(r*0.2)},${Math.floor(g*0.2)},${Math.floor(b*0.2)})`;
         bg = `linear-gradient(to bottom, rgb(${r},${g},${b}), ${mid}, ${dark})`;
-        namecolor = mid;
+        namecolor = bg;
       } else {
         // Normale Lampenfarbe
         bg = `rgb(${r},${g},${b})`;
         namecolor = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
+        namecolor = bg;
       }
     }
 
@@ -64,7 +65,6 @@ class MyDynamicLightCard extends HTMLElement {
         .name{
             color:${namecolor || "white"};
             font-size:${fontSize};
-            -webkit-text-stroke: 1px #ffffffff;
         }
         .icon{
             color:${color};
