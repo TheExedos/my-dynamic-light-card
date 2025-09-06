@@ -42,13 +42,12 @@ class MyDynamicLightCard extends HTMLElement {
         // Dunklere Stufen berechnen
         const mid  = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
         const dark = `rgb(${Math.floor(r*0.2)},${Math.floor(g*0.2)},${Math.floor(b*0.2)})`;
-        bg = `linear-gradient(to bottom, rgb(${r},${g},${b}), ${mid}, ${dark})`;
         namecolor = bg;
+        bg = `linear-gradient(to bottom, rgb(${r},${g},${b}), ${mid}, ${dark})`;
       } else {
         // Normale Lampenfarbe
-        bg = `rgb(${r},${g},${b})`;
-        namecolor = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
         namecolor = bg;
+        bg = `rgb(${r},${g},${b})`;
       }
     }
 
