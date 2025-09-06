@@ -15,8 +15,8 @@ class MyDynamicLightCard extends HTMLElement {
     //icon definieren
     const isOn = stateObj.state === "on";
     const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
-    const iconColor = isOn ? "yellow" : "gray";
-    const iconSize = this.config.icon_size || "24px";
+    let iconColor = isOn ? "yellow" : "gray";
+    let iconSize = this.config.icon_size || "24px";
 
     //onoff slider farben
     let sliderButtonColor = "white";
