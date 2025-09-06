@@ -57,6 +57,7 @@ class MyDynamicLightCard extends HTMLElement {
             padding:16px; 
             background:${bg}; 
             border-radius:8px;
+            position: relative;
         }
         .name{
             color:${namecolor || "white"};
@@ -67,7 +68,9 @@ class MyDynamicLightCard extends HTMLElement {
         }
 
         .onoff-slider {
-          position: relative;
+          position: absolute;
+          top: 12px;
+          right: 12px;
           width: 50px;
           height: 24px;
         }
@@ -110,10 +113,10 @@ class MyDynamicLightCard extends HTMLElement {
           <ha-icon icon="${icon}" class=icon></ha-icon>
           <div>
             <div class="name"><b>${name}</b></div>
-            <div class="onoff-slider">
+          </div>
+          <div class="onoff-slider">
               <input type="checkbox" ${isOn ? "checked" : ""} disabled>
               <span class="slider"></span>
-            </div>
           </div>
         </div>
       </ha-card>
