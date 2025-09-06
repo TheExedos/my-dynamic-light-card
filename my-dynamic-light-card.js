@@ -74,14 +74,19 @@ class MyDynamicLightCard extends HTMLElement {
         }
         .icon{
             color:${iconColor};
-            margin-right:12px;
             --mdc-icon-size: ${iconSize};
         }
-        .iconBG{
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 50%;
-          padding: 8px;
-          }
+        .iconBG {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: calc(${iconSize} + 16px);   /* 16px = 8px Padding rundherum */
+            height: calc(${iconSize} + 16px);
+            padding: 8px;                        /* Abstand Icon zum Rand */
+            margin-right:12px;
+        }
         .onoff-slider {
           position: absolute;
           top: 12px;
