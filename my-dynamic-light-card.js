@@ -19,6 +19,7 @@ class MyDynamicLightCard extends HTMLElement {
 
     //name setzen mit fallback
     const name = this.config.name || "Lampe";
+    let namecolor = this.config.name_color || "white"
 
     // Hintergrundfarbe setzen wenn aus config übergeben wurde, sonst default
     let bg = this.config.background || "#222222";
@@ -35,16 +36,18 @@ class MyDynamicLightCard extends HTMLElement {
       const c = stateObj.attributes.rgb_color;
       const r = c[0], g = c[1], b = c[2];
 
-    if (bgMode === "gradient") {
-      // Dunklere Stufen berechnen
-      const mid  = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
-      const dark = `rgb(${Math.floor(r*0.2)},${Math.floor(g*0.2)},${Math.floor(b*0.2)})`;
-      bg = `linear-gradient(to bottom, rgb(${r},${g},${b}), ${mid}, ${dark})`;
-    } else {
-      // Normale Lampenfarbe
-      bg = `rgb(${r},${g},${b})`;
+      if (bgMode === "gradient") {
+        // Dunklere Stufen berechnen
+        const mid  = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
+        const dark = `rgb(${Math.floor(r*0.2)},${Math.floor(g*0.2)},${Math.floor(b*0.2)})`;
+        bg = `linear-gradient(to bottom, rgb(${r},${g},${b}), ${mid}, ${dark})`;
+        namecolor = mid;
+      } else {
+        // Normale Lampenfarbe
+        bg = `rgb(${r},${g},${b})`;
+        namecolor = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
+      }
     }
-}
 
     this.innerHTML = `
       <style>
@@ -54,6 +57,9 @@ class MyDynamicLightCard extends HTMLElement {
             padding:16px; 
             background:${bg}; 
             border-radius:8px;
+        }
+        .name{
+            color:${namecolor || "white"};
         }
         .icon{
             color:${color};
@@ -74,7 +80,7 @@ class MyDynamicLightCard extends HTMLElement {
 
         .slider {
           position: absolute;
-          background-color: gray;
+          background-color: ${color};
           border-radius: 24px;
           top: 0; left: 0; right: 0; bottom: 0;
           transition: .4s;
@@ -91,7 +97,7 @@ class MyDynamicLightCard extends HTMLElement {
         }
 
         input:checked + .slider {
-          background-color: yellow;
+          background-color: ${color};
         }
 
         input:checked + .slider:before {
@@ -103,7 +109,7 @@ class MyDynamicLightCard extends HTMLElement {
         <div class="light-container">
           <ha-icon icon="${icon}" class=icon></ha-icon>
           <div>
-            <div><b>${name}</b></div>
+            <div class="name"><b>${name}</b></div>
             <div class="onoff-slider">
               <input type="checkbox" ${isOn ? "checked" : ""} disabled>
               <span class="slider"></span>
