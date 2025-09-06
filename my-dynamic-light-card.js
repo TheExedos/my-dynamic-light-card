@@ -8,13 +8,14 @@ class MyDynamicLightCard extends HTMLElement {
     const entity = hass.states[this.config.entity];
     if (!entity) return;
 
+    // HTML der Karte
     this.innerHTML = `
-      <ha-card style="padding: 16px; cursor: pointer;">
-        <div style="font-weight: bold;">${this.config.name || 'Meine Lampe'}</div>
+      <ha-card id="my-dlc-card" style="padding:16px; cursor:pointer;">
+        <div id="my-dlc-name" style="font-weight:bold;">${this.config.name || 'Meine Lampe'}</div>
       </ha-card>
     `;
 
-    const card = this.querySelector('ha-card');
+    const card = this.querySelector('#my-dlc-card');
 
     // Dynamischer Hintergrund
     card.style.background = entity.state === 'on' ? '#FFA500' : '#222';
@@ -28,4 +29,4 @@ class MyDynamicLightCard extends HTMLElement {
   }
 }
 
-customElements.define('my-dynamic-light-card', MyDynamicLightCard);
+customElements.define('custom-my-dynamic-light-card', MyDynamicLightCard);
