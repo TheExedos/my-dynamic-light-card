@@ -21,12 +21,12 @@ class MyDynamicLightCard extends HTMLElement {
 
     //icon definieren
     const isOn = stateObj.state === "on";
-    const icon = this.config.icon || (isOn ? "mdi:lightbulb-on" : "mdi:lightbulb-off");
+    const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
     const color = isOn ? "yellow" : "gray";
 
 
     // Hintergrundfarbe setzen
-    let bg = stateObj.state === "on" ? "green" : "gray";
+    let bg = stateObj.state === "on" ? "green" : "#222222";
 
     //name setzen mit fallback
     const name = this.config.name || "Lampe";
