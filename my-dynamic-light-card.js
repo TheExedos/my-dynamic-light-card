@@ -1,16 +1,24 @@
 class MyDynamicLightCard extends HTMLElement {
   setConfig(config) {
-    this.innerHTML = `
-      <ha-card header="Test Card">
-        <div style="padding:16px;">
-          ✅ Custom Card geladen!
-        </div>
-      </ha-card>
-    `;
+    if (!config.entity) {
+      throw new Error("Entity muss angegeben werden");
+    }
+    this.config = config;
+    this.attachShadow({ mode: "open" });
   }
 
   set hass(hass) {
-    // Wird aufgerufen, wenn sich HA-Status ändert
+    const entity = hass.states[this.config.entity];
+    const state = entity ? entity.state : "unavailable";
+
+    // Hintergrundfarbe setzen
+    let bg = state === "on" ? "green" : "gray";
+
+    this.shadowRoot.innerHTML = `
+      <ha-card style="padding: 16px; background:${bg}; color:white;">
+        <h1>${this.config.name || "Lampe"} ist ${state}</h1>
+      </ha-card>
+    `;
   }
 }
 
