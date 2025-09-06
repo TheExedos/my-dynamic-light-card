@@ -15,8 +15,12 @@ class MyDynamicLightCard extends HTMLElement {
     //icon definieren
     const isOn = stateObj.state === "on";
     const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
-    const color = isOn ? "yellow" : "gray";
+    const iconColor = isOn ? "yellow" : "gray";
     const iconSize = this.config.icon_size || "24px";
+
+    //onoff slider farben
+    let sliderButtonColor = "white";
+    let sliderBgColor = "gray";
 
     //name setzen mit fallback
     const name = this.config.name || "Lampe";
@@ -42,12 +46,15 @@ class MyDynamicLightCard extends HTMLElement {
         // Dunklere Stufen berechnen
         const mid  = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
         const dark = `rgb(${Math.floor(r*0.2)},${Math.floor(g*0.2)},${Math.floor(b*0.2)})`;
-        namecolor = bg;
         bg = `linear-gradient(to bottom, rgb(${r},${g},${b}), ${mid}, ${dark})`;
+        iconColor  = `rgb(${r},${g},${b})`;
+        sliderButtonColor  = `rgb(${r},${g},${b})`;
+        sliderBgColor = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
       } else {
         // Normale Lampenfarbe
-        namecolor = bg;
         bg = `rgb(${r},${g},${b})`;
+        sliderButtonColor  = `rgb(${r},${g},${b})`;
+        sliderBgColor = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
       }
     }
 
