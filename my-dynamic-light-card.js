@@ -77,7 +77,11 @@ class MyDynamicLightCard extends HTMLElement {
             margin-right:12px;
             --mdc-icon-size: ${iconSize};
         }
-
+        .iconBG{
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 50%;
+          padding: 8px;
+          }
         .onoff-slider {
           position: absolute;
           top: 12px;
@@ -121,7 +125,7 @@ class MyDynamicLightCard extends HTMLElement {
 
       <ha-card>
         <div class="light-container">
-          <ha-icon icon="${icon}" class=icon></ha-icon>
+          <div class=iconBG><ha-icon icon="${icon}" class=icon></ha-icon></div>
           <div>
             <div class="name"><b>${name}</b></div>
           </div>
