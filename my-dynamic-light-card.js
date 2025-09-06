@@ -16,10 +16,12 @@ class MyDynamicLightCard extends HTMLElement {
     const isOn = stateObj.state === "on";
     const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
     const color = isOn ? "yellow" : "gray";
+    const iconSize = this.config.icon_size || "24px";
 
     //name setzen mit fallback
     const name = this.config.name || "Lampe";
     let namecolor = this.config.name_color || "white"
+    const fontSize = this.config.font_size || "16px";
 
     // Hintergrundfarbe setzen wenn aus config übergeben wurde, sonst default
     let bg = this.config.background || "#222222";
@@ -61,10 +63,12 @@ class MyDynamicLightCard extends HTMLElement {
         }
         .name{
             color:${namecolor || "white"};
+            font-size:${fontSize};
         }
         .icon{
             color:${color};
             margin-right:12px;
+            font-size:${iconSize};
         }
 
         .onoff-slider {
