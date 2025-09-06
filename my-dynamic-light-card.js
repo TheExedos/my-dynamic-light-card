@@ -68,7 +68,7 @@ class MyDynamicLightCard extends HTMLElement {
         .icon{
             color:${color};
             margin-right:12px;
-            font-size:${iconSize};
+            --mdc-icon-size: ${iconSize};
         }
 
         .onoff-slider {
