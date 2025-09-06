@@ -73,7 +73,7 @@ class MyDynamicLightCard extends HTMLElement {
             font-size:${fontSize};
         }
         .icon{
-            color:${color};
+            color:${iconColor};
             margin-right:12px;
             --mdc-icon-size: ${iconSize};
         }
@@ -94,7 +94,7 @@ class MyDynamicLightCard extends HTMLElement {
 
         .slider {
           position: absolute;
-          background-color: ${color};
+          background-color: ${iconColor};
           border-radius: 24px;
           top: 0; left: 0; right: 0; bottom: 0;
           transition: .4s;
@@ -105,13 +105,13 @@ class MyDynamicLightCard extends HTMLElement {
           position: absolute;
           height: 20px; width: 20px;
           left: 2px; bottom: 2px;
-          background-color: white;
+          background-color: ${sliderButtonColor};
           border-radius: 50%;
           transition: .4s;
         }
 
         input:checked + .slider {
-          background-color: ${color};
+          background-color: ${sliderBgColor};
         }
 
         input:checked + .slider:before {
