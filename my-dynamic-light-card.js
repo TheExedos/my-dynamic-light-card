@@ -1,5 +1,4 @@
 class MyDynamicLightCard extends HTMLElement {
-  // überprüfen das Entity gesetzt wurde
   setConfig(config) {
     if (!config.entity) {
       throw new Error("Entity muss angegeben werden");
@@ -7,46 +6,38 @@ class MyDynamicLightCard extends HTMLElement {
     this.config = config;
   }
 
-  //hass inhalt wird aktualisiert immer wenn sich in config was ändert
   set hass(hass) {
     const entityId = this.config.entity;
     const stateObj = hass.states[entityId];
 
-    //icon definieren
     const isOn = stateObj.state === "on";
     const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
     let iconColor = isOn ? "yellow" : "gray";
     let iconSize = this.config.icon_size || "24px";
 
-    //onoff slider farben
     let sliderButtonColor = "white";
     let sliderBgColor = "gray";
 
-    //name setzen mit fallback
     const name = this.config.name || "Lampe";
     let namecolor = this.config.name_color || "white";
     const fontSize = this.config.font_size || "16px";
 
-    // Hintergrundfarbe setzen wenn aus config übergeben wurde, sonst default
     let bg = this.config.background || "#222222";
     let mainBG = this.config.background_main || "#222222";
     const bgMode = this.config.background_mode || "solid";
 
-    //überprüft ob ein status der entity übergeben wurde. wenn nein warnung ausgeben.
     if (!stateObj) {
       this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
       return;
     }
 
-    // Berechne Slider-Farbe und Hintergrund-Farbe nur wenn die Lampe an ist
-    let sliderBarColor = "#888"; // default wenn aus
+    let sliderBarColor = "#888";
     let brightness = 0;
     if (isOn && stateObj.attributes.rgb_color) {
       const [r, g, b] = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
       const factor = brightness / 255;
 
-      // Helligkeit anwenden
       const rB = Math.floor(r * factor);
       const gB = Math.floor(g * factor);
       const bB = Math.floor(b * factor);
@@ -54,7 +45,6 @@ class MyDynamicLightCard extends HTMLElement {
       sliderBarColor = `rgb(${rB}, ${gB}, ${bB})`;
 
       if (bgMode === "gradient") {
-        // Dunklere Stufen berechnen
         const mid  = `rgb(${Math.floor(rB*0.5)},${Math.floor(gB*0.5)},${Math.floor(bB*0.5)})`;
         const dark = `rgb(${Math.floor(rB*0.2)},${Math.floor(gB*0.2)},${Math.floor(bB*0.2)})`;
         bg = `linear-gradient(to bottom, rgb(${rB},${gB},${bB}), ${mid}, ${dark})`;
@@ -62,7 +52,6 @@ class MyDynamicLightCard extends HTMLElement {
         sliderButtonColor  = `rgb(${rB},${gB},${bB})`;
         sliderBgColor = mid;
       } else {
-        // Normale Lampenfarbe
         bg = `rgb(${rB},${gB},${bB})`;
         iconColor  = `rgb(${rB},${gB},${bB})`;
         sliderButtonColor  = `rgb(${rB},${gB},${bB})`;
@@ -88,8 +77,6 @@ class MyDynamicLightCard extends HTMLElement {
             color:${namecolor};
             font-size:${fontSize};
         }
-
-        /* Icons */
         .icon{
             color:${iconColor};
             --mdc-icon-size: ${iconSize};
@@ -140,7 +127,7 @@ class MyDynamicLightCard extends HTMLElement {
           transform: translateX(26px);
         }
 
-        /* Brightness Regler wie Mushroom */
+        /* Brightness Regler wie Mushroom, dick */
         .brightness-container {
           padding: 12px;
         }
@@ -148,8 +135,8 @@ class MyDynamicLightCard extends HTMLElement {
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 12px;
-          border-radius: 6px;
+          height: 36px; /* Dreifach dick */
+          border-radius: 18px;
           background: linear-gradient(to right, ${sliderBarColor} 0%, ${sliderBarColor} ${(brightness/255)*100}%, #555 ${(brightness/255)*100}%, #555 100%);
           cursor: pointer;
         }
@@ -187,7 +174,6 @@ class MyDynamicLightCard extends HTMLElement {
       </ha-card>
     `;
 
-    // Click-to-toggle hinzufügen
     const container = this.querySelector('.light-container');
     if (container) {
       container.addEventListener('click', () => {
@@ -195,16 +181,13 @@ class MyDynamicLightCard extends HTMLElement {
       });
     }
 
-    // slider funktion
     const slider = this.querySelector('.brightness-slider');
     if (slider) {
       slider.addEventListener('input', (e) => {
         const value = parseInt(e.target.value);
-        // Slider-Visual aktualisieren
         const perc = (value/255)*100;
+        // Optimiert: nur Style-Update
         slider.style.background = `linear-gradient(to right, ${sliderBarColor} 0%, ${sliderBarColor} ${perc}%, #555 ${perc}%, #555 100%)`;
-
-        // Licht aktualisieren
         hass.callService('light', 'turn_on', {
           entity_id: entityId,
           brightness: value
