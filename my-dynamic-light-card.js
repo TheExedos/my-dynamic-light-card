@@ -37,14 +37,16 @@ class MyDynamicLightCard extends HTMLElement {
       brightness = stateObj.attributes.brightness || 255;
       const factor = brightness / 255;
 
+      // Basisfarbe für Container (volle Helligkeit)
       rB = Math.floor(r * factor);
       gB = Math.floor(g * factor);
       bB = Math.floor(b * factor);
 
       if (bgMode === "gradient") {
-        // Sanfte Dimmung für Light-Container
-        const midFactor = 0.85;
-        const darkFactor = 0.7;
+        // Mildere Dimmung für den Light-Container (Pastell-Look)
+        const midFactor = 0.85; // max 15% dunkler
+        const darkFactor = 0.7; // max 30% dunkler
+
         const mid  = `rgb(${Math.floor(r*midFactor)},${Math.floor(g*midFactor)},${Math.floor(b*midFactor)})`;
         const dark = `rgb(${Math.floor(r*darkFactor)},${Math.floor(g*darkFactor)},${Math.floor(b*darkFactor)})`;
 
@@ -75,14 +77,14 @@ class MyDynamicLightCard extends HTMLElement {
           font-size:${fontSize};
         }
         .icon {
-          color:${iconColor}; /* Vollfarbe, nicht helligkeitsangepasst */
+          color:${iconColor}; 
           --mdc-icon-size: ${iconSize};
         }
         .iconBG {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.1); /* Vollfarbe, nicht helligkeitsangepasst */
+          background: rgba(255, 255, 255, 0.1);
           border-radius: 50%;
           width: calc(${iconSize} + 16px);
           height: calc(${iconSize} + 16px);
@@ -103,7 +105,7 @@ class MyDynamicLightCard extends HTMLElement {
         }
         .slider {
           position: absolute;
-          background-color: ${iconColor}; /* Vollfarbe */
+          background-color: ${iconColor};
           border-radius: 24px;
           top: 0; left: 0; right: 0; bottom: 0;
           transition: .4s;
@@ -127,13 +129,13 @@ class MyDynamicLightCard extends HTMLElement {
         /* Brightness Regler horizontal, dick, ohne Thumb */
         .brightness-container {
           padding: 12px;
-          background: linear-gradient(to bottom, rgb(${Math.floor(rB*0.7)},${Math.floor(gB*0.7)},${Math.floor(bB*0.7)}), ${mainBG});
+          background: linear-gradient(to bottom, rgb(${Math.floor(rB*0.3)},${Math.floor(gB*0.3)},${Math.floor(bB*0.3)}), ${mainBG});
         }
         .brightness-slider {
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 48px; /* 3x dick */
+          height: 48px;
           border-radius: 24px;
           background: linear-gradient(to right, rgb(${rB},${gB},${bB}) ${fillPercent}%, rgba(255,255,255,0.1) ${fillPercent}% 100%);
           outline: none;
@@ -192,10 +194,13 @@ class MyDynamicLightCard extends HTMLElement {
 
         if (stateObj.attributes.rgb_color) {
           const [r, g, b] = stateObj.attributes.rgb_color;
-          const factor = val / 255;
+
+          // Realistische Abdunklung analog zum Light-Container
+          const factor = 0.3 + 0.7 * (val / 255); 
           const rBnew = Math.floor(r * factor);
           const gBnew = Math.floor(g * factor);
           const bBnew = Math.floor(b * factor);
+
           const percent = val / 255 * 100;
           slider.style.background = `linear-gradient(to right, rgb(${rBnew},${gBnew},${bBnew}) ${percent}%, rgba(255,255,255,0.1) ${percent}% 100%)`;
         }
