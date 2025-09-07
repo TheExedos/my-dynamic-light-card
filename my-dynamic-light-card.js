@@ -21,9 +21,8 @@ class MyDynamicLightCard extends HTMLElement {
     let namecolor = this.config.name_color || "white";
     const fontSize = this.config.font_size || "16px";
 
-    let bg = this.config.background || "#1c1c1c";
     let mainBG = this.config.background_main || "#1c1c1c";
-    const bgMode = this.config.background_mode || "solid";
+    let bgMode = this.config.background_mode || "solid";
 
     if (!stateObj) {
       this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
@@ -32,30 +31,35 @@ class MyDynamicLightCard extends HTMLElement {
 
     let brightness = 0;
     let rB = 0, gB = 0, bB = 0;
-    let darkColor = "#000"; // für den gradient des brightness-container
+    let lightContainerDarkest = "#111"; // Default dunkler Farbton
 
     if (isOn && stateObj.attributes.rgb_color) {
       const [r, g, b] = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
       const factor = brightness / 255;
 
+      // Light-Container Gradient: oben hell, unten dunkler, aber moderat
+      const factorTop = Math.max(factor, 0.6); // Oben nicht zu dunkel
+      const factorBottom = Math.max(factor*0.5, 0.3); // Unten dunkler, aber nicht zu extrem
+
+      const rTop = Math.floor(r * factorTop);
+      const gTop = Math.floor(g * factorTop);
+      const bTop = Math.floor(b * factorTop);
+
+      const rBottom = Math.floor(r * factorBottom);
+      const gBottom = Math.floor(g * factorBottom);
+      const bBottom = Math.floor(b * factorBottom);
+
       rB = Math.floor(r * factor);
       gB = Math.floor(g * factor);
       bB = Math.floor(b * factor);
 
-      // minimaler Faktor für den oberen Gradientwert, damit es nie zu dunkel wird
-      const minFactor = 0.4;
-      const rDark = Math.floor(r * minFactor);
-      const gDark = Math.floor(g * minFactor);
-      const bDark = Math.floor(b * minFactor);
-      darkColor = `rgb(${rDark},${gDark},${bDark})`;
+      lightContainerDarkest = `rgb(${rBottom},${gBottom},${bBottom})`; // für brightness container
 
       if (bgMode === "gradient") {
-        const mid  = `rgb(${Math.floor(rB*0.5)},${Math.floor(gB*0.5)},${Math.floor(bB*0.5)})`;
-        bg = `linear-gradient(to bottom, rgb(${rB},${gB},${bB}), ${mid}, ${darkColor})`;
+        bg = `linear-gradient(to bottom, rgb(${rTop},${gTop},${bTop}), rgb(${rBottom},${gBottom},${bBottom}))`;
       } else {
         bg = `rgb(${rB},${gB},${bB})`;
-        darkColor = bg;
       }
     }
 
@@ -80,7 +84,7 @@ class MyDynamicLightCard extends HTMLElement {
           font-size:${fontSize};
         }
         .icon {
-          color:${iconColor};
+          color:${iconColor}; /* Vollfarbe */
           --mdc-icon-size: ${iconSize};
         }
         .iconBG {
@@ -129,10 +133,10 @@ class MyDynamicLightCard extends HTMLElement {
           transform: translateX(26px);
         }
 
-        /* Brightness Regler horizontal, dick, ohne Thumb, Container ohne Rundung */
+        /* Brightness Regler horizontal, dick, ohne Rundung auf Container */
         .brightness-container {
           padding: 12px;
-          background: linear-gradient(to bottom, ${darkColor}, ${mainBG});
+          background: linear-gradient(to bottom, ${lightContainerDarkest}, ${mainBG});
         }
         .brightness-slider {
           -webkit-appearance: none;
