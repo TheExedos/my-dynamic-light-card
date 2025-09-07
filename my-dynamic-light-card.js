@@ -30,6 +30,7 @@ class MyDynamicLightCard extends HTMLElement {
 
     let brightness = 0;
     let rB = 0, gB = 0, bB = 0;
+    let darkColor = mainBG;
     if (isOn && stateObj.attributes.rgb_color) {
       const [r, g, b] = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
@@ -44,13 +45,14 @@ class MyDynamicLightCard extends HTMLElement {
         const dark = `rgb(${Math.floor(rB*0.2)},${Math.floor(gB*0.2)},${Math.floor(bB*0.2)})`;
         bg = `linear-gradient(to bottom, rgb(${rB},${gB},${bB}), ${mid}, ${dark})`;
         iconColor  = `rgb(${rB},${gB},${bB})`;
+        darkColor = dark;
       } else {
         bg = `rgb(${rB},${gB},${bB})`;
         iconColor  = `rgb(${rB},${gB},${bB})`;
+        darkColor = `rgb(${Math.floor(rB*0.2)},${Math.floor(gB*0.2)},${Math.floor(bB*0.2)})`;
       }
     }
 
-    // Prozentuale Breite für Slider-Farbe
     const fillPercent = brightness / 255 * 100;
 
     this.innerHTML = `
@@ -129,9 +131,9 @@ class MyDynamicLightCard extends HTMLElement {
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 48px; /* 3x dick */
+          height: 48px;
           border-radius: 24px;
-          background: linear-gradient(to right, rgb(${rB},${gB},${bB}) ${fillPercent}%, rgba(255,255,255,0.1) ${fillPercent}% 100%);
+          background: linear-gradient(to right, ${darkColor} ${fillPercent}%, ${mainBG} ${fillPercent}% 100%);
           outline: none;
           cursor: pointer;
         }
@@ -185,7 +187,6 @@ class MyDynamicLightCard extends HTMLElement {
       slider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value);
         tempBrightness = val;
-
         if (stateObj.attributes.rgb_color) {
           const [r, g, b] = stateObj.attributes.rgb_color;
           const factor = val / 255;
@@ -193,7 +194,7 @@ class MyDynamicLightCard extends HTMLElement {
           const gB = Math.floor(g * factor);
           const bB = Math.floor(b * factor);
           const percent = val / 255 * 100;
-          slider.style.background = `linear-gradient(to right, rgb(${rB},${gB},${bB}) ${percent}%, rgba(255,255,255,0.1) ${percent}% 100%)`;
+          slider.style.background = `linear-gradient(to right, rgb(${Math.floor(r*0.2*factor)},${Math.floor(g*0.2*factor)},${Math.floor(b*0.2*factor)}) ${percent}%, ${mainBG} ${percent}% 100%)`;
         }
       });
 
