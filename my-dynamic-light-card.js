@@ -29,12 +29,22 @@ class MyDynamicLightCard extends HTMLElement {
 
     // Hintergrundfarbe setzen wenn aus config übergeben wurde, sonst default
     let bg = this.config.background || "#222222";
+    let mainBG = this.config.background_main || "#222222";
     const bgMode = this.config.background_mode || "solid";
 
     //überprüft ob ein status der entity übergeben wurde. wenn nein warnung ausgeben.
     if (!stateObj) {
       this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
       return;
+    }
+
+    // Berechne Slider-Farbe nur wenn die Lampe an ist
+    let sliderBarColor = "#888"; // default wenn aus
+    if (isOn && stateObj.attributes.rgb_color) {
+        const [r, g, b] = stateObj.attributes.rgb_color;
+        const brightness = stateObj.attributes.brightness || 255;
+        const factor = brightness / 255;
+        sliderBarColor = `rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`;
     }
 
     // Wenn die Lampe an ist und eine rgb_color Attribut hat, setze den Hintergrund auf diese Farbe
@@ -60,12 +70,15 @@ class MyDynamicLightCard extends HTMLElement {
 
     this.innerHTML = `
       <style>
+        .wrapper {
+          border-radius: 8px;
+          background:${mainBG};
+          }
         .light-container{
             display:flex; 
             align-items:center; 
             padding:16px; 
             background:${bg}; 
-            border-radius:8px;
             position: relative;
         }
         .name{
