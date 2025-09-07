@@ -31,8 +31,6 @@ class MyDynamicLightCard extends HTMLElement {
 
     let brightness = 0;
     let rB = 0, gB = 0, bB = 0;
-    let bg = this.config.background || "#1c1c1c";
-    let lightContainerDarkest = "#111";
 
     if (isOn && stateObj.attributes.rgb_color) {
       const [r, g, b] = stateObj.attributes.rgb_color;
@@ -42,21 +40,23 @@ class MyDynamicLightCard extends HTMLElement {
       rB = Math.floor(r * factor);
       gB = Math.floor(g * factor);
       bB = Math.floor(b * factor);
-
-      // Sanfter Gradient für Light-Container (oben hell, unten dunkler)
-      const rTop = Math.floor(r * 0.8);
-      const gTop = Math.floor(g * 0.8);
-      const bTop = Math.floor(b * 0.8);
-      const rBottom = Math.floor(r * 0.5);
-      const gBottom = Math.floor(g * 0.5);
-      const bBottom = Math.floor(b * 0.5);
-
-      lightContainerDarkest = `rgb(${rBottom},${gBottom},${bBottom})`;
-
-      bg = bgMode === "gradient"
-        ? `linear-gradient(to bottom, rgb(${rTop},${gTop},${bTop}), ${lightContainerDarkest})`
-        : `rgb(${rB},${gB},${bB})`;
     }
+
+    // Light-Container Gradient dynamisch berechnen
+    const rTop = isOn ? Math.floor(rB * 0.8) : 60;
+    const gTop = isOn ? Math.floor(gB * 0.8) : 60;
+    const bTop = isOn ? Math.floor(bB * 0.8) : 60;
+    const rBottom = isOn ? Math.floor(rB * 0.5) : 20;
+    const gBottom = isOn ? Math.floor(gB * 0.5) : 20;
+    const bBottom = isOn ? Math.floor(bB * 0.5) : 20;
+
+    const lightContainerBG = bgMode === "gradient"
+      ? `linear-gradient(to bottom, rgb(${rTop},${gTop},${bTop}), rgb(${rBottom},${gBottom},${bBottom}))`
+      : isOn
+        ? `rgb(${rB},${gB},${bB})`
+        : "#222222";
+
+    const brightnessContainerBG = `linear-gradient(to bottom, rgb(${rBottom},${gBottom},${bBottom}), ${mainBG})`;
 
     const fillPercent = brightness / 255 * 100;
 
@@ -71,7 +71,7 @@ class MyDynamicLightCard extends HTMLElement {
           display:flex; 
           align-items:center; 
           padding:16px; 
-          background:${bg}; 
+          background:${lightContainerBG}; 
           position: relative;
         }
         .name {
@@ -79,14 +79,14 @@ class MyDynamicLightCard extends HTMLElement {
           font-size:${fontSize};
         }
         .icon {
-          color:${iconColor}; /* Vollfarbe */
+          color:${iconColor};
           --mdc-icon-size: ${iconSize};
         }
         .iconBG {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.1); /* Vollfarbe */
+          background: rgba(255, 255, 255, 0.1);
           border-radius: 50%;
           width: calc(${iconSize} + 16px);
           height: calc(${iconSize} + 16px);
@@ -107,7 +107,7 @@ class MyDynamicLightCard extends HTMLElement {
         }
         .slider {
           position: absolute;
-          background-color: ${iconColor}; /* Vollfarbe */
+          background-color: ${iconColor};
           border-radius: 24px;
           top: 0; left: 0; right: 0; bottom: 0;
           transition: .4s;
@@ -131,7 +131,7 @@ class MyDynamicLightCard extends HTMLElement {
         /* Brightness-Regler horizontal, dick, ohne Thumb */
         .brightness-container {
           padding: 12px;
-          background: linear-gradient(to bottom, ${lightContainerDarkest}, ${mainBG});
+          background: ${brightnessContainerBG};
         }
         .brightness-slider {
           -webkit-appearance: none;
@@ -202,6 +202,16 @@ class MyDynamicLightCard extends HTMLElement {
           const bBnew = Math.floor(b * factor);
           const percent = val / 255 * 100;
           slider.style.background = `linear-gradient(to right, rgb(${rBnew},${gBnew},${bBnew}) ${percent}%, rgba(255,255,255,0.1) ${percent}% 100%)`;
+
+          // Dynamischer Light-Container
+          const rTopNew = Math.floor(rBnew * 0.8);
+          const gTopNew = Math.floor(gBnew * 0.8);
+          const bTopNew = Math.floor(bBnew * 0.8);
+          const rBottomNew = Math.floor(rBnew * 0.5);
+          const gBottomNew = Math.floor(gBnew * 0.5);
+          const bBottomNew = Math.floor(bBnew * 0.5);
+          this.querySelector('.light-container').style.background = `linear-gradient(to bottom, rgb(${rTopNew},${gTopNew},${bTopNew}), rgb(${rBottomNew},${gBottomNew},${bBottomNew}))`;
+          this.querySelector('.brightness-container').style.background = `linear-gradient(to bottom, rgb(${rBottomNew},${gBottomNew},${bBottomNew}), ${mainBG})`;
         }
       });
 
