@@ -10,47 +10,46 @@ class MyDynamicLightCard extends HTMLElement {
     const entityId = this.config.entity;
     const stateObj = hass.states[entityId];
 
-    if (!stateObj) {
-      this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
-      return;
-    }
-
     const isOn = stateObj.state === "on";
     const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
+    let iconColor = isOn && stateObj.attributes.rgb_color
+      ? `rgb(${stateObj.attributes.rgb_color[0]},${stateObj.attributes.rgb_color[1]},${stateObj.attributes.rgb_color[2]})`
+      : (isOn ? "yellow" : "gray");
     let iconSize = this.config.icon_size || "24px";
 
     const name = this.config.name || "Lampe";
     let namecolor = this.config.name_color || "white";
     const fontSize = this.config.font_size || "16px";
 
+    let bg = this.config.background || "#1c1c1c";
     let mainBG = this.config.background_main || "#1c1c1c";
     const bgMode = this.config.background_mode || "solid";
 
+    if (!stateObj) {
+      this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
+      return;
+    }
+
     let brightness = 0;
-    let r = 255, g = 255, b = 255;
+    let rB = 0, gB = 0, bB = 0;
     if (isOn && stateObj.attributes.rgb_color) {
-      [r, g, b] = stateObj.attributes.rgb_color;
+      const [r, g, b] = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
+      const factor = brightness / 255;
+
+      rB = Math.floor(r * factor);
+      gB = Math.floor(g * factor);
+      bB = Math.floor(b * factor);
+
+      if (bgMode === "gradient") {
+        const mid  = `rgb(${Math.floor(rB*0.5)},${Math.floor(gB*0.5)},${Math.floor(bB*0.5)})`;
+        const dark = `rgb(${Math.floor(rB*0.2)},${Math.floor(gB*0.2)},${Math.floor(bB*0.2)})`;
+        bg = `linear-gradient(to bottom, rgb(${rB},${gB},${bB}), ${mid}, ${dark})`;
+      } else {
+        bg = `rgb(${rB},${gB},${bB})`;
+      }
     }
 
-    // Interpolation für minimale Helligkeit wie Home Assistant
-    function interpolateColor(minVal, maxVal, factor) {
-      return Math.round(minVal + (maxVal - minVal) * factor);
-    }
-
-    // Minimalfarbe (1%) festgelegt nach deinem Beispiel
-    const minFactor = 1 / 100; // 1%
-    const rMin = interpolateColor(138, r, minFactor);
-    const gMin = interpolateColor(60, g, minFactor);
-    const bMin = interpolateColor(46, b, minFactor);
-
-    // Farbe für Light-Container Gradient (milder Verlauf)
-    const gradientMidFactor = 0.6; // milder dunkel, nicht zu stark
-    const rDark = Math.round(r * gradientMidFactor);
-    const gDark = Math.round(g * gradientMidFactor);
-    const bDark = Math.round(b * gradientMidFactor);
-
-    // Slider fill Prozent
     const fillPercent = brightness / 255 * 100;
 
     this.innerHTML = `
@@ -64,10 +63,7 @@ class MyDynamicLightCard extends HTMLElement {
           display:flex; 
           align-items:center; 
           padding:16px; 
-          background:${bgMode === "gradient"
-            ? `linear-gradient(to bottom, rgb(${r},${g},${b}), rgb(${rDark},${gDark},${bDark}))`
-            : `rgb(${r},${g},${b})`
-          };
+          background:${bg}; 
           position: relative;
         }
         .name {
@@ -75,14 +71,14 @@ class MyDynamicLightCard extends HTMLElement {
           font-size:${fontSize};
         }
         .icon {
-          color: rgb(${r},${g},${b}); /* Vollfarbe, nicht helligkeitsangepasst */
+          color:${iconColor}; /* Vollfarbe, nicht helligkeitsangepasst */
           --mdc-icon-size: ${iconSize};
         }
         .iconBG {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255,255,255,0.1);
+          background: rgba(255, 255, 255, 0.1); /* Vollfarbe, nicht helligkeitsangepasst */
           border-radius: 50%;
           width: calc(${iconSize} + 16px);
           height: calc(${iconSize} + 16px);
@@ -103,7 +99,7 @@ class MyDynamicLightCard extends HTMLElement {
         }
         .slider {
           position: absolute;
-          background-color: rgb(${r},${g},${b});
+          background-color: ${iconColor}; /* Vollfarbe */
           border-radius: 24px;
           top: 0; left: 0; right: 0; bottom: 0;
           transition: .4s;
@@ -118,7 +114,7 @@ class MyDynamicLightCard extends HTMLElement {
           transition: .4s;
         }
         input:checked + .slider {
-          background-color: rgb(${r},${g},${b});
+          background-color: ${iconColor};
         }
         input:checked + .slider:before {
           transform: translateX(26px);
@@ -127,15 +123,15 @@ class MyDynamicLightCard extends HTMLElement {
         /* Brightness Regler horizontal, dick, ohne Thumb */
         .brightness-container {
           padding: 12px;
-          background: linear-gradient(to bottom, rgb(${rDark},${gDark},${bDark}), ${mainBG});
+          background: linear-gradient(to bottom, ${bgMode === "gradient" ? `rgb(${Math.floor(rB*0.2)},${Math.floor(gB*0.2)},${Math.floor(bB*0.2)})` : bg}, ${mainBG});
         }
         .brightness-slider {
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 48px;
+          height: 48px; /* 3x dick */
           border-radius: 24px;
-          background: linear-gradient(to right, rgb(${rMin},${gMin},${bMin}) ${fillPercent}%, rgba(255,255,255,0.1) ${fillPercent}% 100%);
+          background: linear-gradient(to right, rgb(${rB},${gB},${bB}) ${fillPercent}%, rgba(255,255,255,0.1) ${fillPercent}% 100%);
           outline: none;
           cursor: pointer;
         }
@@ -190,13 +186,15 @@ class MyDynamicLightCard extends HTMLElement {
         const val = parseInt(e.target.value);
         tempBrightness = val;
 
-        const factor = val / 255;
-        const rVal = Math.round(rMin + (r - rMin) * factor);
-        const gVal = Math.round(gMin + (g - gMin) * factor);
-        const bVal = Math.round(bMin + (b - bMin) * factor);
-        const percent = val / 255 * 100;
-
-        slider.style.background = `linear-gradient(to right, rgb(${rVal},${gVal},${bVal}) ${percent}%, rgba(255,255,255,0.1) ${percent}% 100%)`;
+        if (stateObj.attributes.rgb_color) {
+          const [r, g, b] = stateObj.attributes.rgb_color;
+          const factor = val / 255;
+          const rBnew = Math.floor(r * factor);
+          const gBnew = Math.floor(g * factor);
+          const bBnew = Math.floor(b * factor);
+          const percent = val / 255 * 100;
+          slider.style.background = `linear-gradient(to right, rgb(${rBnew},${gBnew},${bBnew}) ${percent}%, rgba(255,255,255,0.1) ${percent}% 100%)`;
+        }
       });
 
       slider.addEventListener('change', () => {
