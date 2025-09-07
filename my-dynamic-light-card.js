@@ -10,53 +10,32 @@ class MyDynamicLightCard extends HTMLElement {
     const entityId = this.config.entity;
     const stateObj = hass.states[entityId];
 
-    const isOn = stateObj.state === "on";
-    const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
-    let iconColor = isOn ? "yellow" : "gray";
-    let iconSize = this.config.icon_size || "24px";
-
-    let sliderButtonColor = "white";
-    let sliderBgColor = "gray";
-
-    const name = this.config.name || "Lampe";
-    let namecolor = this.config.name_color || "white";
-    const fontSize = this.config.font_size || "16px";
-
-    let bg = this.config.background || "#222222";
-    let mainBG = this.config.background_main || "#222222";
-    const bgMode = this.config.background_mode || "solid";
-
     if (!stateObj) {
       this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
       return;
     }
 
+    const isOn = stateObj.state === "on";
+    const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
+    let iconColor = isOn ? "yellow" : "gray";
+    let iconSize = this.config.icon_size || "24px";
+
+    const name = this.config.name || "Lampe";
+    const namecolor = this.config.name_color || "white";
+    const fontSize = this.config.font_size || "16px";
+
+    const mainBG = this.config.background_main || "#222222";
+    const bgMode = this.config.background_mode || "solid";
+
     let sliderBarColor = "#888";
     let brightness = 0;
+    let baseColor = [34, 34, 34];
+
     if (isOn && stateObj.attributes.rgb_color) {
-      const [r, g, b] = stateObj.attributes.rgb_color;
+      baseColor = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
       const factor = brightness / 255;
-
-      const rB = Math.floor(r * factor);
-      const gB = Math.floor(g * factor);
-      const bB = Math.floor(b * factor);
-
-      sliderBarColor = `rgb(${rB}, ${gB}, ${bB})`;
-
-      if (bgMode === "gradient") {
-        const mid  = `rgb(${Math.floor(rB*0.5)},${Math.floor(gB*0.5)},${Math.floor(bB*0.5)})`;
-        const dark = `rgb(${Math.floor(rB*0.2)},${Math.floor(gB*0.2)},${Math.floor(bB*0.2)})`;
-        bg = `linear-gradient(to bottom, rgb(${rB},${gB},${bB}), ${mid}, ${dark})`;
-        iconColor  = `rgb(${rB},${gB},${bB})`;
-        sliderButtonColor  = `rgb(${rB},${gB},${bB})`;
-        sliderBgColor = mid;
-      } else {
-        bg = `rgb(${rB},${gB},${bB})`;
-        iconColor  = `rgb(${rB},${gB},${bB})`;
-        sliderButtonColor  = `rgb(${rB},${gB},${bB})`;
-        sliderBgColor = `rgb(${Math.floor(rB*0.5)},${Math.floor(gB*0.5)},${Math.floor(bB*0.5)})`;
-      }
+      sliderBarColor = `rgb(${Math.floor(baseColor[0]*factor)}, ${Math.floor(baseColor[1]*factor)}, ${Math.floor(baseColor[2]*factor)})`;
     }
 
     this.innerHTML = `
@@ -70,8 +49,9 @@ class MyDynamicLightCard extends HTMLElement {
             display:flex; 
             align-items:center; 
             padding:16px; 
-            background:${bg}; 
+            background:${sliderBarColor}; 
             position: relative;
+            transition: background 0.1s linear;
         }
         .name{
             color:${namecolor};
@@ -116,18 +96,18 @@ class MyDynamicLightCard extends HTMLElement {
           position: absolute;
           height: 20px; width: 20px;
           left: 2px; bottom: 2px;
-          background-color: ${sliderButtonColor};
+          background-color: white;
           border-radius: 50%;
           transition: .4s;
         }
         input:checked + .slider {
-          background-color: ${sliderBgColor};
+          background-color: ${sliderBarColor};
         }
         input:checked + .slider:before {
           transform: translateX(26px);
         }
 
-        /* Brightness Regler wie Mushroom, dick */
+        /* Mushroom-Style Brightness Slider */
         .brightness-container {
           padding: 12px;
         }
@@ -135,20 +115,24 @@ class MyDynamicLightCard extends HTMLElement {
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 36px; /* Dreifach dick */
-          border-radius: 18px;
-          background: linear-gradient(to right, ${sliderBarColor} 0%, ${sliderBarColor} ${(brightness/255)*100}%, #555 ${(brightness/255)*100}%, #555 100%);
+          height: 48px;
+          border-radius: 24px;
+          background: ${sliderBarColor};
+          outline: none;
           cursor: pointer;
         }
         .brightness-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 0;
-          height: 0;
+          width: 100%;
+          height: 100%;
+          background: transparent;
+          border: none;
         }
         .brightness-slider::-moz-range-thumb {
-          width: 0;
-          height: 0;
+          width: 100%;
+          height: 100%;
+          background: transparent;
           border: none;
         }
       </style>
@@ -156,19 +140,19 @@ class MyDynamicLightCard extends HTMLElement {
       <ha-card>
         <div class="wrapper">
           <div class="light-container">
-            <div class=iconBG><ha-icon icon="${icon}" class=icon></ha-icon></div>
+            <div class="iconBG"><ha-icon icon="${icon}" class="icon"></ha-icon></div>
             <div>
               <div class="name"><b>${name}</b></div>
             </div>
             <div class="onoff-slider">
-                <input type="checkbox" ${isOn ? "checked" : ""} disabled>
-                <span class="slider"></span>
+              <input type="checkbox" ${isOn ? "checked" : ""} disabled>
+              <span class="slider"></span>
             </div>
           </div>
           ${isOn ? `
-            <div class="brightness-container">
-              <input type="range" min="1" max="255" value="${brightness}" class="brightness-slider">
-            </div>
+          <div class="brightness-container">
+            <input type="range" min="1" max="255" value="${brightness}" class="brightness-slider">
+          </div>
           ` : ``}
         </div>
       </ha-card>
@@ -185,9 +169,12 @@ class MyDynamicLightCard extends HTMLElement {
     if (slider) {
       slider.addEventListener('input', (e) => {
         const value = parseInt(e.target.value);
-        const perc = (value/255)*100;
-        // Optimiert: nur Style-Update
-        slider.style.background = `linear-gradient(to right, ${sliderBarColor} 0%, ${sliderBarColor} ${perc}%, #555 ${perc}%, #555 100%)`;
+        const factor = value / 255;
+        const r = Math.floor(baseColor[0] * factor);
+        const g = Math.floor(baseColor[1] * factor);
+        const b = Math.floor(baseColor[2] * factor);
+        container.style.background = `rgb(${r}, ${g}, ${b})`;
+
         hass.callService('light', 'turn_on', {
           entity_id: entityId,
           brightness: value
