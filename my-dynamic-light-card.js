@@ -158,9 +158,12 @@ class MyDynamicLightCard extends HTMLElement {
     `;
 
     // Click-to-toggle hinzufügen
-    this.querySelector('light-container').addEventListener('click', () => {
+    const container = this.querySelector('.light-container');
+    if (container) {
+      container.addEventListener('click', () => {
       hass.callService('light', 'toggle', { entity_id: entityId });
     });
+}
   }
 }
 
