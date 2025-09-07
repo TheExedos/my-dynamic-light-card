@@ -10,11 +10,6 @@ class MyDynamicLightCard extends HTMLElement {
     const entityId = this.config.entity;
     const stateObj = hass.states[entityId];
 
-    if (!stateObj) {
-      this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
-      return;
-    }
-
     const isOn = stateObj.state === "on";
     const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
     let iconColor = isOn && stateObj.attributes.rgb_color
@@ -26,8 +21,14 @@ class MyDynamicLightCard extends HTMLElement {
     let namecolor = this.config.name_color || "white";
     const fontSize = this.config.font_size || "16px";
 
+    let bg = this.config.background || "#1c1c1c";
     let mainBG = this.config.background_main || "#1c1c1c";
     const bgMode = this.config.background_mode || "solid";
+
+    if (!stateObj) {
+      this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
+      return;
+    }
 
     let brightness = 0;
     let rB = 0, gB = 0, bB = 0;
@@ -35,43 +36,48 @@ class MyDynamicLightCard extends HTMLElement {
       const [r, g, b] = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
 
-      // Faktor für aktuelle Helligkeit (realistische Pastell-Dimmung)
-      const factor = 0.3 + 0.7 * (brightness / 255);
-      rB = Math.floor(r * factor);
-      gB = Math.floor(g * factor);
-      bB = Math.floor(b * factor);
+      // Factor für Light-Container
+      const factorLC = 0.3 + 0.7 * (brightness / 255);
+      rB = Math.floor(r * factorLC);
+      gB = Math.floor(g * factorLC);
+      bB = Math.floor(b * factorLC);
+
+      if (bgMode === "gradient") {
+        // Mildere Reduktion für mid und dark, hell oben -> dunkel unten
+        const midFactor = 0.85;
+        const darkFactor = 0.7;
+
+        const mid  = `rgb(${Math.floor(rB*midFactor)},${Math.floor(gB*midFactor)},${Math.floor(bB*midFactor)})`;
+        const dark = `rgb(${Math.floor(rB*darkFactor)},${Math.floor(gB*darkFactor)},${Math.floor(bB*darkFactor)})`;
+
+        bg = `linear-gradient(to bottom, rgb(${rB},${gB},${bB}), ${mid}, ${dark})`;
+      } else {
+        bg = `rgb(${rB},${gB},${bB})`;
+      }
     }
 
     const fillPercent = brightness / 255 * 100;
-
-    // Gradient für light-container: von hell (oben) nach dunkel (unten)
-    const topColor = `rgb(${rB},${gB},${bB})`;
-    const midColor = `rgb(${Math.floor(rB*0.85)},${Math.floor(gB*0.85)},${Math.floor(bB*0.85)})`;
-    const darkColor = `rgb(${Math.floor(rB*0.7)},${Math.floor(gB*0.7)},${Math.floor(bB*0.7)})`;
-    const lightContainerBG = bgMode === "gradient"
-      ? `linear-gradient(to bottom, ${topColor}, ${midColor}, ${darkColor})`
-      : topColor;
 
     this.innerHTML = `
       <style>
         .wrapper {
           border-radius: 8px;
-          background: ${mainBG};
+          background:${mainBG};
           overflow: hidden;
         }
         .light-container {
-          display: flex;
-          align-items: center;
-          padding: 16px;
-          background: ${lightContainerBG};
+          display:flex; 
+          align-items:center; 
+          padding:16px; 
+          background:${bg}; 
           position: relative;
         }
         .name {
-          color: ${namecolor};
-          font-size: ${fontSize};
+          color:${namecolor};
+          font-size:${fontSize};
         }
         .icon {
-          color: ${iconColor};
+          color:${iconColor}; 
           --mdc-icon-size: ${iconSize};
         }
         .iconBG {
@@ -83,7 +89,7 @@ class MyDynamicLightCard extends HTMLElement {
           width: calc(${iconSize} + 16px);
           height: calc(${iconSize} + 16px);
           padding: 8px;
-          margin-right: 12px;
+          margin-right:12px;
         }
         .onoff-slider {
           position: absolute;
@@ -122,7 +128,7 @@ class MyDynamicLightCard extends HTMLElement {
 
         .brightness-container {
           padding: 12px;
-          background: linear-gradient(to bottom, ${darkColor}, ${mainBG});
+          background: linear-gradient(to bottom, rgb(${Math.floor(rB*0.7)},${Math.floor(gB*0.7)},${Math.floor(bB*0.7)}), ${mainBG});
         }
         .brightness-slider {
           -webkit-appearance: none;
@@ -153,8 +159,10 @@ class MyDynamicLightCard extends HTMLElement {
       <ha-card>
         <div class="wrapper">
           <div class="light-container">
-            <div class="iconBG"><ha-icon icon="${icon}" class="icon"></ha-icon></div>
-            <div><div class="name"><b>${name}</b></div></div>
+            <div class=iconBG><ha-icon icon="${icon}" class=icon></ha-icon></div>
+            <div>
+              <div class="name"><b>${name}</b></div>
+            </div>
             <div class="onoff-slider">
               <input type="checkbox" ${isOn ? "checked" : ""} disabled>
               <span class="slider"></span>
@@ -179,26 +187,32 @@ class MyDynamicLightCard extends HTMLElement {
     const slider = this.querySelector('.brightness-slider');
     if (slider) {
       let tempBrightness = brightness;
-
-      const updateSliderGradient = (val) => {
-        const [r, g, b] = stateObj.attributes.rgb_color;
-        const factor = 0.3 + 0.7 * (val / 255);
-        const rBnew = Math.floor(r * factor);
-        const gBnew = Math.floor(g * factor);
-        const bBnew = Math.floor(b * factor);
-        const percent = val / 255 * 100;
-        slider.style.background = `linear-gradient(to right, rgb(${rBnew},${gBnew},${bBnew}) ${percent}%, rgba(255,255,255,0.1) ${percent}% 100%)`;
-        return { rBnew, gBnew, bBnew };
-      };
-
       slider.addEventListener('input', (e) => {
-        tempBrightness = parseInt(e.target.value);
-        const { rBnew, gBnew, bBnew } = updateSliderGradient(tempBrightness);
+        const val = parseInt(e.target.value);
+        tempBrightness = val;
 
-        // Light-container live anpassen
-        const midColor = `rgb(${Math.floor(rBnew*0.85)},${Math.floor(gBnew*0.85)},${Math.floor(bBnew*0.85)})`;
-        const darkColor = `rgb(${Math.floor(rBnew*0.7)},${Math.floor(gBnew*0.7)},${Math.floor(bBnew*0.7)})`;
-        this.querySelector('.light-container').style.background = `linear-gradient(to bottom, rgb(${rBnew},${gBnew},${bBnew}), ${midColor}, ${darkColor})`;
+        if (stateObj.attributes.rgb_color) {
+          const [r, g, b] = stateObj.attributes.rgb_color;
+
+          // Faktor für realistische Dimmung
+          const factor = 0.3 + 0.7 * (val / 255);
+          const rBnew = Math.floor(r * factor);
+          const gBnew = Math.floor(g * factor);
+          const bBnew = Math.floor(b * factor);
+
+          const percent = val / 255 * 100;
+          slider.style.background = `linear-gradient(to right, rgb(${rBnew},${gBnew},${bBnew}) ${percent}%, rgba(255,255,255,0.1) ${percent}% 100%)`;
+
+          // Light-Container Gradient live anpassen
+          const midFactor = 0.85;
+          const darkFactor = 0.7;
+          const mid = `rgb(${Math.floor(rBnew*midFactor)},${Math.floor(gBnew*midFactor)},${Math.floor(bBnew*midFactor)})`;
+          const dark = `rgb(${Math.floor(rBnew*darkFactor)},${Math.floor(gBnew*darkFactor)},${Math.floor(bBnew*darkFactor)})`;
+          this.querySelector('.light-container').style.background = `linear-gradient(to bottom, rgb(${rBnew},${gBnew},${bBnew}), ${mid}, ${dark})`;
+
+          // Brightness-Container Gradient live anpassen
+          this.querySelector('.brightness-container').style.background = `linear-gradient(to bottom, ${dark}, ${mainBG})`;
+        }
       });
 
       slider.addEventListener('change', () => {
