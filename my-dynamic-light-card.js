@@ -30,6 +30,7 @@ class MyDynamicLightCard extends HTMLElement {
 
     let brightness = 0;
     let rB = 0, gB = 0, bB = 0;
+    let darkColor = mainBG;
     if (isOn && stateObj.attributes.rgb_color) {
       const [r, g, b] = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
@@ -44,13 +45,14 @@ class MyDynamicLightCard extends HTMLElement {
         const dark = `rgb(${Math.floor(rB*0.2)},${Math.floor(gB*0.2)},${Math.floor(bB*0.2)})`;
         bg = `linear-gradient(to bottom, rgb(${rB},${gB},${bB}), ${mid}, ${dark})`;
         iconColor  = `rgb(${rB},${gB},${bB})`;
+        darkColor = dark;
       } else {
         bg = `rgb(${rB},${gB},${bB})`;
         iconColor  = `rgb(${rB},${gB},${bB})`;
+        darkColor = `rgb(${Math.floor(rB*0.2)},${Math.floor(gB*0.2)},${Math.floor(bB*0.2)})`;
       }
     }
 
-    // Prozentuale Breite für Slider-Farbe
     const fillPercent = brightness / 255 * 100;
 
     this.innerHTML = `
@@ -124,12 +126,14 @@ class MyDynamicLightCard extends HTMLElement {
         /* Brightness Regler horizontal, dick, ohne Thumb */
         .brightness-container {
           padding: 12px;
+          background: linear-gradient(to right, ${darkColor}, ${mainBG});
+          border-radius: 24px;
         }
         .brightness-slider {
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 48px; /* 3x dick */
+          height: 48px;
           border-radius: 24px;
           background: linear-gradient(to right, rgb(${rB},${gB},${bB}) ${fillPercent}%, rgba(255,255,255,0.1) ${fillPercent}% 100%);
           outline: none;
