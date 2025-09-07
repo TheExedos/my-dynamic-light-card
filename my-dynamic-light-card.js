@@ -31,6 +31,7 @@ class MyDynamicLightCard extends HTMLElement {
     let brightness = 0;
     let rB = 0, gB = 0, bB = 0;
     let darkColor = mainBG;
+
     if (isOn && stateObj.attributes.rgb_color) {
       const [r, g, b] = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
@@ -123,11 +124,10 @@ class MyDynamicLightCard extends HTMLElement {
           transform: translateX(26px);
         }
 
-        /* Brightness Regler horizontal, dick, ohne Thumb */
+        /* Brightness Regler horizontal, dick, ohne Thumb, Container-Gradient von dark->mainBG */
         .brightness-container {
-          padding: 12px;
-          background: linear-gradient(to right, ${darkColor}, ${mainBG});
-          border-radius: 24px;
+          padding: 0 12px 12px 12px;
+          background: linear-gradient(to bottom, ${darkColor}, ${mainBG});
         }
         .brightness-slider {
           -webkit-appearance: none;
