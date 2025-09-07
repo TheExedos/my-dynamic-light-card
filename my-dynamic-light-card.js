@@ -10,6 +10,11 @@ class MyDynamicLightCard extends HTMLElement {
     const entityId = this.config.entity;
     const stateObj = hass.states[entityId];
 
+    if (!stateObj) {
+      this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
+      return;
+    }
+
     const isOn = stateObj.state === "on";
     const icon = this.config.icon || (isOn ? (this.config.icon_on || "mdi:lightbulb-on") : (this.config.icon_off || "mdi:lightbulb-off"));
     let iconColor = isOn && stateObj.attributes.rgb_color
@@ -22,45 +27,35 @@ class MyDynamicLightCard extends HTMLElement {
     const fontSize = this.config.font_size || "16px";
 
     let mainBG = this.config.background_main || "#1c1c1c";
-    let bgMode = this.config.background_mode || "solid";
-
-    if (!stateObj) {
-      this.innerHTML = `<hui-warning>Entity nicht gefunden: ${entityId}</hui-warning>`;
-      return;
-    }
+    const bgMode = this.config.background_mode || "solid";
 
     let brightness = 0;
     let rB = 0, gB = 0, bB = 0;
-    let lightContainerDarkest = "#111"; // Default dunkler Farbton
+    let bg = this.config.background || "#1c1c1c";
+    let lightContainerDarkest = "#111";
 
     if (isOn && stateObj.attributes.rgb_color) {
       const [r, g, b] = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
       const factor = brightness / 255;
 
-      // Light-Container Gradient: oben hell, unten dunkler, aber moderat
-      const factorTop = Math.max(factor, 0.6); // Oben nicht zu dunkel
-      const factorBottom = Math.max(factor*0.5, 0.3); // Unten dunkler, aber nicht zu extrem
-
-      const rTop = Math.floor(r * factorTop);
-      const gTop = Math.floor(g * factorTop);
-      const bTop = Math.floor(b * factorTop);
-
-      const rBottom = Math.floor(r * factorBottom);
-      const gBottom = Math.floor(g * factorBottom);
-      const bBottom = Math.floor(b * factorBottom);
-
       rB = Math.floor(r * factor);
       gB = Math.floor(g * factor);
       bB = Math.floor(b * factor);
 
-      lightContainerDarkest = `rgb(${rBottom},${gBottom},${bBottom})`; // für brightness container
+      // Sanfter Gradient für Light-Container (oben hell, unten dunkler)
+      const rTop = Math.floor(r * 0.8);
+      const gTop = Math.floor(g * 0.8);
+      const bTop = Math.floor(b * 0.8);
+      const rBottom = Math.floor(r * 0.5);
+      const gBottom = Math.floor(g * 0.5);
+      const bBottom = Math.floor(b * 0.5);
 
-      if (bgMode === "gradient") {
-        bg = `linear-gradient(to bottom, rgb(${rTop},${gTop},${bTop}), rgb(${rBottom},${gBottom},${bBottom}))`;
-      } else {
-        bg = `rgb(${rB},${gB},${bB})`;
-      }
+      lightContainerDarkest = `rgb(${rBottom},${gBottom},${bBottom})`;
+
+      bg = bgMode === "gradient"
+        ? `linear-gradient(to bottom, rgb(${rTop},${gTop},${bTop}), ${lightContainerDarkest})`
+        : `rgb(${rB},${gB},${bB})`;
     }
 
     const fillPercent = brightness / 255 * 100;
@@ -91,7 +86,7 @@ class MyDynamicLightCard extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.1); /* Vollfarbe */
           border-radius: 50%;
           width: calc(${iconSize} + 16px);
           height: calc(${iconSize} + 16px);
@@ -112,7 +107,7 @@ class MyDynamicLightCard extends HTMLElement {
         }
         .slider {
           position: absolute;
-          background-color: ${iconColor};
+          background-color: ${iconColor}; /* Vollfarbe */
           border-radius: 24px;
           top: 0; left: 0; right: 0; bottom: 0;
           transition: .4s;
@@ -133,7 +128,7 @@ class MyDynamicLightCard extends HTMLElement {
           transform: translateX(26px);
         }
 
-        /* Brightness Regler horizontal, dick, ohne Rundung auf Container */
+        /* Brightness-Regler horizontal, dick, ohne Thumb */
         .brightness-container {
           padding: 12px;
           background: linear-gradient(to bottom, ${lightContainerDarkest}, ${mainBG});
@@ -167,7 +162,7 @@ class MyDynamicLightCard extends HTMLElement {
       <ha-card>
         <div class="wrapper">
           <div class="light-container">
-            <div class=iconBG><ha-icon icon="${icon}" class=icon></ha-icon></div>
+            <div class="iconBG"><ha-icon icon="${icon}" class="icon"></ha-icon></div>
             <div>
               <div class="name"><b>${name}</b></div>
             </div>
