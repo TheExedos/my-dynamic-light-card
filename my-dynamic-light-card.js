@@ -73,6 +73,7 @@ class MyDynamicLightCard extends HTMLElement {
         .wrapper {
           border-radius: 8px;
           background:${mainBG};
+          overflow: hidden;
           }
         .light-container{
             display:flex; 
