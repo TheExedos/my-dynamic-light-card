@@ -40,11 +40,12 @@ class MyDynamicLightCard extends HTMLElement {
 
     // Berechne Slider-Farbe nur wenn die Lampe an ist
     let sliderBarColor = "#888"; // default wenn aus
+    let brightness = 0;
     if (isOn && stateObj.attributes.rgb_color) {
-        const [r, g, b] = stateObj.attributes.rgb_color;
-        const brightness = stateObj.attributes.brightness || 255;
-        const factor = brightness / 255;
-        sliderBarColor = `rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`;
+      const [r, g, b] = stateObj.attributes.rgb_color;
+      brightness = stateObj.attributes.brightness || 255;
+      const factor = brightness / 255;
+      sliderBarColor = `rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`;
     }
 
     // Wenn die Lampe an ist und eine rgb_color Attribut hat, setze den Hintergrund auf diese Farbe
@@ -83,9 +84,12 @@ class MyDynamicLightCard extends HTMLElement {
             position: relative;
         }
         .name{
-            color:${namecolor || "white"};
+            color:${namecolor};
             font-size:${fontSize};
         }
+
+        /* Icons */
+
         .icon{
             color:${iconColor};
             --mdc-icon-size: ${iconSize};
@@ -140,6 +144,44 @@ class MyDynamicLightCard extends HTMLElement {
         input:checked + .slider:before {
           transform: translateX(26px);
         }
+
+        /* Brightness Regler */
+
+        .brightness-container {
+          padding: 12px; /* Abstand rundherum */
+        }
+
+        .brightness-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 16px;
+          border-radius: 8px;
+          background: ${sliderBarColor};
+          outline: none;
+          cursor: pointer;
+        }
+
+        /* Thumb (der Knopf) */
+          .brightness-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: white;
+          border: 2px solid ${sliderBarColor};
+          cursor: pointer;
+        }
+
+        .brightness-slider::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid ${sliderBarColor};
+        cursor: pointer;
+        }
       </style>
 
       <ha-card>
@@ -154,6 +196,11 @@ class MyDynamicLightCard extends HTMLElement {
               <span class="slider"></span>
           </div>
         </div>
+        ${isOn ? `
+          <div class="brightness-container">
+            <input type="range" min="1" max="255" value="${brightness}" class="brightness-slider">
+          </div>
+        ` : ``}
         </div>
       </ha-card>
     `;
@@ -163,8 +210,20 @@ class MyDynamicLightCard extends HTMLElement {
     if (container) {
       container.addEventListener('click', () => {
       hass.callService('light', 'toggle', { entity_id: entityId });
-    });
-}
+      });
+    }
+    // slider funktion
+    const slider = this.querySelector('.brightness-slider');
+    if (slider) {
+      slider.addEventListener('input', (e) => {
+      const value = parseInt(e.target.value);
+        hass.callService('light', 'turn_on', {
+          entity_id: entityId,
+          brightness: value
+        });
+      });
+    }
+
   }
 }
 
