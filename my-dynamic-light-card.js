@@ -37,22 +37,21 @@ class MyDynamicLightCard extends HTMLElement {
       brightness = stateObj.attributes.brightness || 255;
       const factor = brightness / 255;
 
-      // Basisfarbe für Container (volle Helligkeit)
       rB = Math.floor(r * factor);
       gB = Math.floor(g * factor);
       bB = Math.floor(b * factor);
 
       if (bgMode === "gradient") {
-        // Mildere Dimmung für den Light-Container (Pastell-Look)
+        // Mildere Reduktion für mid und dark
         const midFactor = 0.85; // max 15% dunkler
         const darkFactor = 0.7; // max 30% dunkler
 
-        const mid  = `rgb(${Math.floor(r*midFactor)},${Math.floor(g*midFactor)},${Math.floor(b*midFactor)})`;
-        const dark = `rgb(${Math.floor(r*darkFactor)},${Math.floor(g*darkFactor)},${Math.floor(b*darkFactor)})`;
+        const mid  = `rgb(${Math.floor(rB*midFactor)},${Math.floor(gB*midFactor)},${Math.floor(bB*midFactor)})`;
+        const dark = `rgb(${Math.floor(rB*darkFactor)},${Math.floor(gB*darkFactor)},${Math.floor(bB*darkFactor)})`;
 
-        bg = `linear-gradient(to bottom, rgb(${r},${g},${b}), ${mid}, ${dark})`;
+        bg = `linear-gradient(to bottom, rgb(${rB},${gB},${bB}), ${mid}, ${dark})`;
       } else {
-        bg = `rgb(${r},${g},${b})`;
+        bg = `rgb(${rB},${gB},${bB})`;
       }
     }
 
@@ -126,10 +125,9 @@ class MyDynamicLightCard extends HTMLElement {
           transform: translateX(26px);
         }
 
-        /* Brightness Regler horizontal, dick, ohne Thumb */
         .brightness-container {
           padding: 12px;
-          background: linear-gradient(to bottom, rgb(${Math.floor(rB*0.3)},${Math.floor(gB*0.3)},${Math.floor(bB*0.3)}), ${mainBG});
+          background: linear-gradient(to bottom, rgb(${Math.floor(rB*0.7)},${Math.floor(gB*0.7)},${Math.floor(bB*0.7)}), ${mainBG});
         }
         .brightness-slider {
           -webkit-appearance: none;
@@ -195,8 +193,8 @@ class MyDynamicLightCard extends HTMLElement {
         if (stateObj.attributes.rgb_color) {
           const [r, g, b] = stateObj.attributes.rgb_color;
 
-          // Realistische Abdunklung analog zum Light-Container
-          const factor = 0.3 + 0.7 * (val / 255); 
+          // realistische Dimmung auf max 70% -> dunkel aber Pastell bleibt
+          const factor = 0.3 + 0.7 * (val / 255);
           const rBnew = Math.floor(r * factor);
           const gBnew = Math.floor(g * factor);
           const bBnew = Math.floor(b * factor);
