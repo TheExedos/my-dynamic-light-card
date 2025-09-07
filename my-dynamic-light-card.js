@@ -19,8 +19,8 @@ class MyDynamicLightCard extends HTMLElement {
     let namecolor = this.config.name_color || "white";
     const fontSize = this.config.font_size || "16px";
 
-    let bg = this.config.background || "#222222";
-    let mainBG = this.config.background_main || "#222222";
+    let bg = this.config.background || "#1c1c1c";
+    let mainBG = this.config.background_main || "#1c1c1c";
     const bgMode = this.config.background_mode || "solid";
 
     if (!stateObj) {
