@@ -38,34 +38,35 @@ class MyDynamicLightCard extends HTMLElement {
       return;
     }
 
-    // Berechne Slider-Farbe nur wenn die Lampe an ist
+    // Berechne Slider-Farbe und Hintergrund-Farbe nur wenn die Lampe an ist
     let sliderBarColor = "#888"; // default wenn aus
     let brightness = 0;
     if (isOn && stateObj.attributes.rgb_color) {
       const [r, g, b] = stateObj.attributes.rgb_color;
       brightness = stateObj.attributes.brightness || 255;
       const factor = brightness / 255;
-      sliderBarColor = `rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`;
-    }
 
-    // Wenn die Lampe an ist und eine rgb_color Attribut hat, setze den Hintergrund auf diese Farbe
-    if (stateObj.state === "on" && stateObj.attributes.rgb_color) {
-      const c = stateObj.attributes.rgb_color;
-      const r = c[0], g = c[1], b = c[2];
+      // Helligkeit anwenden
+      const rB = Math.floor(r * factor);
+      const gB = Math.floor(g * factor);
+      const bB = Math.floor(b * factor);
+
+      sliderBarColor = `rgb(${rB}, ${gB}, ${bB})`;
 
       if (bgMode === "gradient") {
         // Dunklere Stufen berechnen
-        const mid  = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
-        const dark = `rgb(${Math.floor(r*0.2)},${Math.floor(g*0.2)},${Math.floor(b*0.2)})`;
-        bg = `linear-gradient(to bottom, rgb(${r},${g},${b}), ${mid}, ${dark})`;
-        iconColor  = `rgb(${r},${g},${b})`;
-        sliderButtonColor  = `rgb(${r},${g},${b})`;
-        sliderBgColor = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
+        const mid  = `rgb(${Math.floor(rB*0.5)},${Math.floor(gB*0.5)},${Math.floor(bB*0.5)})`;
+        const dark = `rgb(${Math.floor(rB*0.2)},${Math.floor(gB*0.2)},${Math.floor(bB*0.2)})`;
+        bg = `linear-gradient(to bottom, rgb(${rB},${gB},${bB}), ${mid}, ${dark})`;
+        iconColor  = `rgb(${rB},${gB},${bB})`;
+        sliderButtonColor  = `rgb(${rB},${gB},${bB})`;
+        sliderBgColor = mid;
       } else {
         // Normale Lampenfarbe
-        bg = `rgb(${r},${g},${b})`;
-        sliderButtonColor  = `rgb(${r},${g},${b})`;
-        sliderBgColor = `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.5)})`;
+        bg = `rgb(${rB},${gB},${bB})`;
+        iconColor  = `rgb(${rB},${gB},${bB})`;
+        sliderButtonColor  = `rgb(${rB},${gB},${bB})`;
+        sliderBgColor = `rgb(${Math.floor(rB*0.5)},${Math.floor(gB*0.5)},${Math.floor(bB*0.5)})`;
       }
     }
 
